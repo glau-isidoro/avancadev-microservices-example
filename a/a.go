@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"net/http"
 )
 
@@ -13,5 +13,6 @@ func main() {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<h1>Hello, World</h1>")
+	t := template.Must(template.ParseFiles("templates/home.html"))
+	t.Execute(w, "")
 }
