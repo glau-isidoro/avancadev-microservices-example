@@ -20,10 +20,14 @@ func home(w http.ResponseWriter, r *http.Request) {
 	coupon := r.PostFormValue("coupon")
 	ccNumber := r.PostFormValue("ccNumber")
 
+	result := Result{Status: "declined"}
+
+	if ccNumber == "0987654321" {
+		result.Status = "approved"
+	}
+
 	log.Println(coupon)
 	log.Println(ccNumber)
-
-	result := Result{Status: "declined"}
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
