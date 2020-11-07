@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 type Result struct {
@@ -20,14 +22,21 @@ func home(w http.ResponseWriter, r *http.Request) {
 	coupon := r.PostFormValue("coupon")
 	ccNumber := r.PostFormValue("ccNumber")
 
+	resultCoupon := makeHTTPCall("http://localhost:9292", coupon)
+
 	result := Result{Status: "declined"}
 
 	if ccNumber == "0987654321" {
 		result.Status = "approved"
 	}
 
-	log.Println(coupon)
-	log.Println(ccNumber)
+	if resultCoupon.Status == "invalid" {
+		result.Status = "invalid coupon"
+	}
+
+	if resultCoupon.Status == "Microservice C out" || resultCoupon.Status == "Error processing result" {
+		result.Status = "error while validating coupon"
+	}
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
@@ -37,25 +46,24 @@ func home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonData))
 }
 
-// func makeHTTPCall(URLMicroservice string, coupon string, ccNumber string) Result {
-// 	values := url.Values{}
-// 	values.Add("coupon", coupon)
-// 	values.Add("ccNumber", ccNumber)
+func makeHTTPCall(URLMicroservice string, coupon string) Result {
+	values := url.Values{}
+	values.Add("coupon", coupon)
 
-// 	res, err := http.PostForm(URLMicroservice, values)
-// 	if err != nil {
-// 		return Result{Status: "Microservice B out"}
-// 	}
+	res, err := http.PostForm(URLMicroservice, values)
+	if err != nil {
+		return Result{Status: "Microservice C out"}
+	}
 
-// 	defer res.Body.Close()
+	defer res.Body.Close()
 
-// 	data, err := ioutil.ReadAll(res.Body)
-// 	if err != nil {
-// 		return Result{Status: "Error processing result"}
-// 	}
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return Result{Status: "Error processing result"}
+	}
 
-// 	result := Result{}
-// 	json.Unmarshal(data, &result)
+	result := Result{}
+	json.Unmarshal(data, &result)
 
-// 	return result
-// }
+	return result
+}
