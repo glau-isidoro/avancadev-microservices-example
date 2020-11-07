@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"html/template"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -40,14 +39,14 @@ func makeHTTPCall(URLMicroservice string, coupon string, ccNumber string) Result
 
 	res, err := http.PostForm(URLMicroservice, values)
 	if err != nil {
-		log.Fatal("Microservice B out")
+		return Result{Status: "Microservice B out"}
 	}
 
 	defer res.Body.Close()
 
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal("Error processing result")
+		return Result{Status: "Error processing result"}
 	}
 
 	result := Result{}
